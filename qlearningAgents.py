@@ -10,8 +10,7 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
-
+import featureExtractors
 from game import *
 from learningAgents import ReinforcementAgent
 from featureExtractors import *
@@ -104,7 +103,7 @@ class QLearningAgent(ReinforcementAgent):
         legalActions = self.getLegalActions(state)
         action = None
         x = util.flipCoin(self.epsilon)
-        if x == 1:
+        if x == 0:
             action = self.computeActionFromQValues(state) # best policy action
         else:
             action = random.choice(legalActions) # random action
@@ -184,14 +183,26 @@ class ApproximateQAgent(PacmanQAgent):
           where * is the dotProduct operator
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        sum = 0
+        for i in range(len(self.featExtractor.getFeatures(state, action))):
+            sum += self.weights[i] + self.featExtractor.getFeatures(state, action)[i]
+        self.qValues[(state, action)] = sum
+        return sum
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        max = float('-inf')
+        actions = self.getLegalActions(nextState)
+        for action in actions:
+            if self.getQValue(nextState, action) > max:
+                max = self.getQValue(nextState, action)
+
+        difference = reward + self.discount * max - self.getQValue(state, action)
+        for i in range(len(self.weights)):
+            self.weights[i] = self.weights[i] + difference * self.alpha * self.featExtractor.getFeatures(state, action)[i]
 
     def final(self, state):
         "Called at the end of each game."
@@ -202,4 +213,4 @@ class ApproximateQAgent(PacmanQAgent):
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
             "*** YOUR CODE HERE ***"
-            pass
+            return True
