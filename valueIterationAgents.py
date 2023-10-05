@@ -31,6 +31,7 @@ import mdp, util
 from learningAgents import ValueEstimationAgent
 import collections
 
+
 class ValueIterationAgent(ValueEstimationAgent):
     """
         * Please read learningAgents.py before reading this.*
@@ -40,7 +41,8 @@ class ValueIterationAgent(ValueEstimationAgent):
         for a given number of iterations using the supplied
         discount factor.
     """
-    def __init__(self, mdp, discount = 0.9, iterations = 100):
+
+    def __init__(self, mdp, discount=0.9, iterations=100):
         """
           Your value iteration agent should take an mdp on
           construction, run the indicated number of iterations
@@ -56,7 +58,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.mdp = mdp
         self.discount = discount
         self.iterations = iterations
-        self.values = util.Counter() # A Counter is a dict with default 0
+        self.values = util.Counter()  # A Counter is a dict with default 0
         self.runValueIteration()
 
     def runValueIteration(self):
@@ -83,12 +85,11 @@ class ValueIterationAgent(ValueEstimationAgent):
             #     print("terminal")
             #     print(self.values[state])
 
-
         for i in range(self.iterations):
             newValues = util.Counter()
             for state in self.mdp.getStates():
                 value = float('-inf')
-                for action in self.mdp.getPossibleActions(state): # ()
+                for action in self.mdp.getPossibleActions(state):  # ()
                     qValue = self.computeQValueFromValues(state, action)
                     if qValue > value:
                         value = qValue
@@ -101,7 +102,6 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         return self.values[state]
 
-
     def computeQValueFromValues(self, state, action):
         """
           Compute the Q-value of action in state from the
@@ -111,7 +111,8 @@ class ValueIterationAgent(ValueEstimationAgent):
         nextStates = self.mdp.getTransitionStatesAndProbs(state, action)
         sum = 0
         for nextState in nextStates:
-            sum += nextState[1] * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState[0]])
+            sum += nextState[1] * (
+                        self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState[0]])
         return sum
         # util.raiseNotDefined()
 
@@ -156,7 +157,8 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
         (see mdp.py) on initialization and runs prioritized sweeping value iteration
         for a given number of iterations using the supplied parameters.
     """
-    def __init__(self, mdp, discount = 0.9, iterations = 100, theta = 1e-5):
+
+    def __init__(self, mdp, discount=0.9, iterations=100, theta=1e-5):
         """
           Your prioritized sweeping value iteration agent should take an mdp on
           construction, run the indicated number of iterations,
@@ -168,6 +170,15 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
         """Compute predecessors of all states."""
+        predecessors = list()
+        for state in self.mdp.getStates():
+            predecessor = set()
+            for action in self.mdp.getPossibleActions(state):
+                nextState = self.mdp.getTransitionStatesAndProbs(state, action)
+                if nextState[1]>0:
+                    predecessor.add()
+
+            predecessors.append(predecessor)
 
         """Initialize an empty priority queue."""
         priorityQueue = util.PriorityQueue()
@@ -195,3 +206,12 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
                         value = qValue
                 self.values[state] = value
 
+            for preState in predecessors[state]:
+                max = float('-inf')
+                for action in self.mdp.getPossibleActions[preState]:
+                    curr = self.getQValue(state, action)
+                    if curr > max:
+                        max = curr
+                diff = abs(self.values[preState], max)
+                if diff > self.theta:
+                    priorityQueue.push(preState, -diff)
