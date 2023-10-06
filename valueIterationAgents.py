@@ -170,27 +170,25 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
         """Compute predecessors of all states."""
-        predecessors = list()
+        predecessors = {state: set() for state in self.mdp.getStates()}
         for state in self.mdp.getStates():
-            predecessor = set()
             for action in self.mdp.getPossibleActions(state):
-                nextState = self.mdp.getTransitionStatesAndProbs(state, action)
-                if nextState[1]>0:
-                    predecessor.add()
-
-            predecessors.append(predecessor)
+                for nextState, prob in self.mdp.getTransitionStatesAndProbs(state, action):
+                    if prob > 0:
+                        # print("state: ", state)
+                        predecessors[nextState].add(state)
 
         """Initialize an empty priority queue."""
         priorityQueue = util.PriorityQueue()
 
         "For each non-terminal state s, do something"
         for state in self.mdp.getStates():
-            diff = float('-inf')
+            if self.mdp.isTerminal(state):
+                continue
+            maxQValue = float('-inf')
             for action in self.mdp.getPossibleActions(state):
-                nextState = self.mdp.getTransitionStatesAndProbs(state, action)
-                newDiff = abs(self.values[state] - self.values[nextState[0]])
-                if newDiff > diff:
-                    diff = newDiff
+                maxQValue = max(maxQValue, self.computeQValueFromValues(state, action))
+            diff = abs(self.values[state] - maxQValue)
             priorityQueue.push(state, -diff)
 
         "For iteration in 0, 1, 2, ..., self.iterations - 1, do something"
@@ -198,20 +196,27 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
             if priorityQueue.isEmpty():
                 break
             state = priorityQueue.pop()
+
             if not self.mdp.isTerminal(state):
                 value = float('-inf')
                 for action in self.mdp.getPossibleActions(state):
+                    # print("1: ", state, action)
                     qValue = self.computeQValueFromValues(state, action)
                     if qValue > value:
                         value = qValue
+                # print(self.values[state], value)
                 self.values[state] = value
 
+            # For each predecessor p of s, do something
             for preState in predecessors[state]:
-                max = float('-inf')
-                for action in self.mdp.getPossibleActions[preState]:
-                    curr = self.getQValue(state, action)
-                    if curr > max:
-                        max = curr
-                diff = abs(self.values[preState], max)
-                if diff > self.theta:
-                    priorityQueue.push(preState, -diff)
+                # print(preState)
+                maxQValue = float('-inf')
+                for action in self.mdp.getPossibleActions(preState):
+                    # print("2: ", preState, action)
+                    QValue = self.computeQValueFromValues(preState, action)
+                    if QValue > maxQValue:
+                        maxQValue = QValue
+                # print(maxQValue)
+                diff = abs(self.values[preState] - maxQValue)
+                if diff > self.theta and preState not in priorityQueue.heap:
+                    priorityQueue.update(preState, -diff)
